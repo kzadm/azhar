@@ -31,7 +31,6 @@ class SpecializationAdmin(ModelAdmin):
 
     @admin.action(description="Распределить студентов по группам")
     def assign_students(self, request, queryset):
-        print(queryset)
         for qualification in queryset:
             students = qualification.student_qualification.all()
             groups = qualification.group_qualification.all()
@@ -88,8 +87,6 @@ class GroupFormAdmin(forms.ModelForm):
         super(GroupFormAdmin, self).__init__(*args, **kwargs)
 
         if self.instance and self.instance.pk:
-            print(self.instance.qualification.id)
-            print(Student.objects.filter(qualification_id=self.instance.qualification.id).all())
             self.fields['students'].queryset = Student.objects.filter(qualification=self.instance.qualification)
             self.fields['students'].initial = [i.student for i in self.instance.student_group_group.select_related('student').all()]
 
@@ -163,7 +160,6 @@ class GroupAdmin(ModelAdmin):
             counter += 1
 
         document, document_name = generate_students_word(data)
-        print(document_name)
         response = HttpResponse(document, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         # response = HttpResponse()
         response['Content-Disposition'] = f'attachment; filename="{document_name}"'
