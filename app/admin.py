@@ -133,8 +133,6 @@ class GroupAdmin(ModelAdmin):
             )
             return False
         group = queryset[0]
-        pages = {}
-        # for i in queryset:
         students = Student.objects.filter(student_group_student__group__id=group.id).all()
         data = {
             "group_name": queryset[0].name,
@@ -161,7 +159,6 @@ class GroupAdmin(ModelAdmin):
 
         document, document_name = generate_students_word(data)
         response = HttpResponse(document, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-        # response = HttpResponse()
         response['Content-Disposition'] = f'attachment; filename="{document_name}"'
         return response
 
