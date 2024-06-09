@@ -7,7 +7,7 @@ from .models import (
     Student, Specialization, Qualification,
     Group, StudentGroup
 )
-from .services import generate_students_word
+from .services import generate_order_word, generate_students_word
 
 
 def distribute_students(students, n):
@@ -27,7 +27,7 @@ def distribute_students(students, n):
 class SpecializationAdmin(ModelAdmin):
     list_display = ('name', 'specialization', 'get_total_students', 'get_total_unassigned_students')
     search_fields = ['name', 'specialization__name']
-    actions = ('assign_students',)
+    actions = ('assign_students', 'generate_order',)
 
     @admin.action(description="Распределить студентов по группам")
     def assign_students(self, request, queryset):
@@ -47,6 +47,39 @@ class SpecializationAdmin(ModelAdmin):
             'Распределение выполнено',
             messages.SUCCESS,
         )
+
+    @admin.action(description="Сформировать приказ о зачислении")
+    def generate_order(self, request, queryset):
+        if len(queryset) > 1:
+            self.message_user(
+                request,
+                'Выберите только одну квалификацию',
+                messages.WARNING,
+            )
+            return False
+        qualification = queryset[0]
+        students = qualification.student_qualification.all()
+        data = {
+            "students": [],
+            "specialization": qualification.specialization.name,
+            "specialization_number": qualification.specialization.number,
+            "qualification": qualification.name,
+            "qualification_number": qualification.number
+
+        }
+        counter = 1
+        for student in students:
+            data['students'].append({
+                'counter': counter,
+                'fio': f'{student.surname} {student.surname} {student.middle_name}',
+                'avg_certificate': student.avg_certificate
+            })
+            counter += 1
+
+        document, document_name = generate_order_word(data)
+        response = HttpResponse(document, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+        response['Content-Disposition'] = f'attachment; filename="{document_name}"'
+        return response
 
     @admin.display(description='Всего студентов')
     def get_total_students(self, obj):

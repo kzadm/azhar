@@ -18,6 +18,18 @@ def generate_students_word(data):
     return generate_template(f"{MEDIA_URL}/students.docx", context, f'svedeniya.docx')
 
 
+def generate_order_word(data):
+    context = {}
+
+    context['specialization'] = data['specialization']
+    context['specialization_number'] = data['specialization_number']
+    context['qualification'] = data['qualification']
+    context['qualification_number'] = data['qualification_number']
+    context['students'] = data['students']
+
+    return generate_template(f"{MEDIA_URL}/order.docx", context, f'order.docx')
+
+
 def generate_template(file_path, context, filename='test.docx'):
     doc = docx.Document()
     buffer = BytesIO()
